@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OctoPlan.Core", "OctoPlan.Core.csproj", "{E6052DC7-0C30-4EEA-A246-0F02B7E98DBC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E6052DC7-0C30-4EEA-A246-0F02B7E98DBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6052DC7-0C30-4EEA-A246-0F02B7E98DBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6052DC7-0C30-4EEA-A246-0F02B7E98DBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6052DC7-0C30-4EEA-A246-0F02B7E98DBC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
