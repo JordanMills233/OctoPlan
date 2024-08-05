@@ -1,4 +1,5 @@
 ﻿using OctoPlan.Core.Models;
+using Task = System.Threading.Tasks.Task;
 
 namespace OctoPlan.Core.Interfaces;
 
@@ -8,5 +9,5 @@ public interface IProjectService
     Task<Project> GetProjectByIdAsync(Guid projectId);
     Task<IEnumerable<Project>> GetProjectsByUserAsync(Guid userId);
     Task<Project> UpdateProjectAsync(Project project);
-    Task<Project> DeleteProjectAsync(Guid projectId);
+    Task DeleteProjectAsync(Guid projectId);
 }

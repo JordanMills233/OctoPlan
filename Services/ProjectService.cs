@@ -1,6 +1,7 @@
 ﻿using OctoPlan.Core.Enums;
 using OctoPlan.Core.Interfaces;
 using OctoPlan.Core.Models;
+using Task = System.Threading.Tasks.Task;
 
 namespace OctoPlan.Core.Services;
 
@@ -30,23 +31,53 @@ public class ProjectService : IProjectService
         return await _projectRepository.AddAsync(project);
     }
 
-    public Task<Project> GetProjectByIdAsync(Guid projectId)
+    public async Task<Project> GetProjectByIdAsync(Guid projectId)
     {
-        throw new NotImplementedException();
+        var project = await _projectRepository.GetByIdAsync(projectId);
+        if (project == null)
+        {
+            throw new Exception($"could not find project with id: {projectId}");
+        }
+
+        return project;
     }
 
-    public Task<IEnumerable<Project>> GetProjectsByUserAsync(Guid userId)
+    public async Task<IEnumerable<Project>> GetProjectsByUserAsync(Guid userId)
     {
-        throw new NotImplementedException();
+        var projects = await _projectRepository.GetProjectsByUserAsync(userId);
+        if (projects == null)
+        {
+            throw new Exception("No projects associated with user");
+        }
+
+        return projects;
     }
 
-    public Task<Project> UpdateProjectAsync(Project project)
+    public async Task<Project> UpdateProjectAsync(Project project)
     {
-        throw new NotImplementedException();
+        var existingProject = await _projectRepository.GetByIdAsync(project.Id);
+        if (existingProject == null)
+        {
+            throw new Exception("no project exists");
+        }
+
+        existingProject.Title = project.Title;
+        existingProject.Description = project.Description;
+        existingProject.Status = project.Status;
+        existingProject.StartDate = project.StartDate;
+        existingProject.EndDate = project.EndDate;
+        
+        return await _projectRepository.UpdateAsync(existingProject);
     }
 
-    public Task<Project> DeleteProjectAsync(Guid projectId)
+    public async Task DeleteProjectAsync(Guid projectId)
     {
-        throw new NotImplementedException();
+        var project = await _projectRepository.GetByIdAsync(projectId);
+        if (project == null)
+        {
+            throw new Exception("project doesnt exist");
+        }
+
+        await _projectRepository.DeleteAsync(project);
     }
 }
