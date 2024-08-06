@@ -52,54 +52,76 @@ public class ProjectTaskService : IProjectTaskService
 
     public async Task<bool> UpdateTaskAsync(ProjectTask updatedProjectTask, CancellationToken ct)
     {
-        var task = await _dbContext.ProjectTasks.FirstOrDefaultAsync(p => p.Id.Equals(updatedProjectTask.Id), ct);
-
-        if (task == null)
+        try
         {
-            throw new Exception("Task not found");
+            var task = await _dbContext.ProjectTasks.FirstOrDefaultAsync(p => p.Id.Equals(updatedProjectTask.Id), ct);
+
+            if (task == null)
+            {
+                throw new Exception("Task not found");
+            }
+
+            task.TaskStatus = updatedProjectTask.TaskStatus;
+            task.Description = updatedProjectTask.Description;
+            task.Priority = updatedProjectTask.Priority;
+            task.Title = updatedProjectTask.Title;
+            task.DueDate = updatedProjectTask.DueDate;
+            task.LastModifiedDate = DateTime.Now;
+            task.AssignedToUserId = updatedProjectTask.AssignedToUserId;
+
+            await _dbContext.SaveChangesAsync(ct);
+
+            return true;
         }
-
-        task.TaskStatus = updatedProjectTask.TaskStatus;
-        task.Description = updatedProjectTask.Description;
-        task.Priority = updatedProjectTask.Priority;
-        task.Title = updatedProjectTask.Title;
-        task.DueDate = updatedProjectTask.DueDate;
-        task.LastModifiedDate = DateTime.Now;
-        task.AssignedToUserId = updatedProjectTask.AssignedToUserId;
-
-        await _dbContext.SaveChangesAsync(ct);
-
-        return true;
+        catch (Exception ex)
+        {
+            return false;
+        }
     }
 
     public async Task<bool> DeleteTaskAsync(Guid taskId, CancellationToken ct)
     {
-        var task = await _dbContext.ProjectTasks.FirstOrDefaultAsync(pt => pt.Id.Equals(taskId), ct);
-
-        if (task == null)
+        try
         {
-            throw new Exception("Task doesnt exist");
+            var task = await _dbContext.ProjectTasks.FirstOrDefaultAsync(pt => pt.Id.Equals(taskId), ct);
+
+            if (task == null)
+            {
+                throw new Exception("Task doesnt exist");
+            }
+            _dbContext.ProjectTasks.Remove(task);
+
+            await _dbContext.SaveChangesAsync(ct);
+
+            return true;
         }
-        _dbContext.ProjectTasks.Remove(task);
-
-        await _dbContext.SaveChangesAsync(ct);
-
-        return true;
+        catch (Exception e)
+        {
+            return false;
+        }
     }
 
     public async Task<bool> AssignTaskAsync(Guid taskId, Guid userId, CancellationToken ct)
     {
-        var task = await _dbContext.ProjectTasks.FirstOrDefaultAsync(pt => pt.Id.Equals(taskId), ct);
-
-        if (task == null)
+        try
         {
-            throw new Exception("task not found");
+            var task = await _dbContext.ProjectTasks.FirstOrDefaultAsync(pt => pt.Id.Equals(taskId), ct);
+
+            if (task == null)
+            {
+                throw new Exception("task not found");
+            }
+
+            task.AssignedToUserId = userId;
+
+            await _dbContext.SaveChangesAsync(ct);
+
+            return true;
         }
-
-        task.AssignedToUserId = userId;
-
-        await _dbContext.SaveChangesAsync(ct);
-
-        return true;
+        catch (Exception e)
+        {
+            return false;
+        }
+        
     }
 }

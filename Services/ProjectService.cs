@@ -65,7 +65,7 @@ public class ProjectService : IProjectService
     {
         try
         {
-            var existingProject = await _dbContext.Projects.FirstOrDefaultAsync(p => p.Id.Equals(project.Id));
+            var existingProject = await _dbContext.Projects.FirstOrDefaultAsync(p => p.Id.Equals(project.Id), ct);
             if (existingProject == null)
             {
                 throw new Exception("no project exists");
