@@ -1,39 +1,47 @@
-﻿using OctoPlan.Core.Enums;
+﻿using Microsoft.EntityFrameworkCore;
+using OctoPlan.Core.Enums;
 using OctoPlan.Core.Interfaces;
 using OctoPlan.Core.Models;
-using Task = System.Threading.Tasks.Task;
+using OctoPlan.Core.Persistence;
 
 namespace OctoPlan.Core.Services;
 
 public class ProjectService : IProjectService
 {
 
-    private readonly IProjectRepository _projectRepository;
-    private readonly IUserRepository _userRepository;
+    private readonly IDatabaseContext _dbContext ;
 
-    public ProjectService(IProjectRepository projectRepository, IUserRepository userRepository)
+    public ProjectService(IDatabaseContext databaseContext)
     {
-        _projectRepository = projectRepository;
-        _userRepository = userRepository;
+        _dbContext = databaseContext;
     }
     
-    public async Task<Project> CreateProjectAsync(Project project, Guid ownerId)
+    public async Task<bool> CreateProjectAsync(Project project, Guid ownerId, CancellationToken ct)
     {
-        var owner = await _userRepository.GetByIdAsync(ownerId);
-        if (owner == null)
+        try
         {
-            throw new Exception($"{ownerId} not found");
+            var owner = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id.Equals(ownerId), ct);
+            if (owner == null)
+            {
+                throw new Exception($"{ownerId} not found");
+            }
+
+            project.OwnerId = ownerId;
+            project.Status = Status.InProgress;
+
+            await _dbContext.Projects.AddAsync(project, ct);
+
+            return true;
         }
-
-        project.OwnerId = ownerId;
-        project.Status = Status.InProgress;
-
-        return await _projectRepository.AddAsync(project);
+        catch (Exception ex)
+        {
+            return false;
+        }
     }
 
     public async Task<Project> GetProjectByIdAsync(Guid projectId)
     {
-        var project = await _projectRepository.GetByIdAsync(projectId);
+        var project = await _dbContext.Projects.FirstOrDefaultAsync(p => p.Id.Equals(projectId));
         if (project == null)
         {
             throw new Exception($"could not find project with id: {projectId}");
@@ -42,9 +50,9 @@ public class ProjectService : IProjectService
         return project;
     }
 
-    public async Task<IEnumerable<Project>> GetProjectsByUserAsync(Guid userId)
+    public async Task<IEnumerable<Project>> GetProjectsByUserAsync(Guid userId, CancellationToken ct)
     {
-        var projects = await _projectRepository.GetProjectsByUserAsync(userId);
+        var projects = await _dbContext.Projects.Where(p => p.OwnerId.Equals(userId)).ToListAsync(ct);
         if (projects == null)
         {
             throw new Exception("No projects associated with user");
@@ -53,31 +61,52 @@ public class ProjectService : IProjectService
         return projects;
     }
 
-    public async Task<Project> UpdateProjectAsync(Project project)
+    public async Task<bool> UpdateProjectAsync(Project project, CancellationToken ct)
     {
-        var existingProject = await _projectRepository.GetByIdAsync(project.Id);
-        if (existingProject == null)
+        try
         {
-            throw new Exception("no project exists");
-        }
+            var existingProject = await _dbContext.Projects.FirstOrDefaultAsync(p => p.Id.Equals(project.Id));
+            if (existingProject == null)
+            {
+                throw new Exception("no project exists");
+            }
 
-        existingProject.Title = project.Title;
-        existingProject.Description = project.Description;
-        existingProject.Status = project.Status;
-        existingProject.StartDate = project.StartDate;
-        existingProject.EndDate = project.EndDate;
-        
-        return await _projectRepository.UpdateAsync(existingProject);
+            existingProject.Title = project.Title;
+            existingProject.Description = project.Description;
+            existingProject.Status = project.Status;
+            existingProject.StartDate = project.StartDate;
+            existingProject.EndDate = project.EndDate;
+
+            await _dbContext.SaveChangesAsync(ct);
+            
+            return true;
+        }
+        catch (Exception ex)
+        {
+            return false;
+        }
     }
 
-    public async Task DeleteProjectAsync(Guid projectId)
+    public async Task<bool> DeleteProjectAsync(Guid projectId, CancellationToken ct)
     {
-        var project = await _projectRepository.GetByIdAsync(projectId);
-        if (project == null)
+        try
         {
-            throw new Exception("project doesnt exist");
-        }
+            var project = await _dbContext.Projects.FirstOrDefaultAsync(p => p.Id.Equals(projectId), ct);
+            if (project == null)
+            {
+                throw new Exception("project doesnt exist");
+            }
 
-        await _projectRepository.DeleteAsync(project);
+            _dbContext.Projects.Remove(project);
+
+            await _dbContext.SaveChangesAsync(ct);
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            return false;
+        }
+        
     }
 }

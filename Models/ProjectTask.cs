@@ -3,7 +3,7 @@ using OctoPlan.Core.Interfaces;
 
 namespace OctoPlan.Core.Models;
 
-public class Task : ITask
+public record ProjectTask
 {
     public Guid Id { get; set; }
     public string Title { get; set; }

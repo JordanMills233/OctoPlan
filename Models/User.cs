@@ -2,7 +2,7 @@
 
 namespace OctoPlan.Core.Models;
 
-public class User : IUser
+public record User
 {
     public Guid Id { get; set; }
     public string FirstName { get; set; } 
