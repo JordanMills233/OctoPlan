@@ -1,6 +1,6 @@
 @OctoPlan.Core_HostAddress = http://localhost:5138
 
-GET {{OctoPlan.Core_HostAddress}}/weatherforecast/
+GET {{OctoPlan.Core_HostAddress}}/api/Task/
 Accept: application/json
 
 ###

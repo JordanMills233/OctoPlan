@@ -23,7 +23,7 @@ public class TaskController : ControllerBase
         return Ok(task);
     }
 
-    [HttpGet]
+    [HttpGet("AllTasks")]
     public async Task<IActionResult> GetAll(Guid projectId, CancellationToken ct)
     {
         var tasks = await _projectTaskService.GetTasksByIdAsync(projectId, ct);

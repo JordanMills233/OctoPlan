@@ -23,7 +23,7 @@ public class ProjectController : ControllerBase
         return Ok(project);
     }
 
-    [HttpGet]
+    [HttpGet("ProjectByEmail")]
     public async Task<IActionResult> GetProjectByEmail(Guid userId, CancellationToken ct)
     {
         var project = await _projectService.GetProjectsByUserAsync(userId, ct);

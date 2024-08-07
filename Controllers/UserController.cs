@@ -23,7 +23,7 @@ public class UserController : ControllerBase
         return Ok(user);
     }
 
-    [HttpGet]
+    [HttpGet("GetByEmail")]
     public async Task<IActionResult> GetUserByEmail(string email)
     {
         var user = await _userService.GetUserByEmailAsync(email);

@@ -5,6 +5,11 @@ namespace OctoPlan.Core.Persistence;
 
 public class DatabaseContext : DbContext, IDatabaseContext
 {
+    
+    public DatabaseContext(DbContextOptions<DatabaseContext> options)
+        : base(options)
+    {
+    }
     public DbSet<Project> Projects { get; set; }
     public DbSet<ProjectTask> ProjectTasks { get; set; }
     public DbSet<User> Users { get; set; }
