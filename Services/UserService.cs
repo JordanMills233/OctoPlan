@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using OctoPlan.Core.Interfaces;
 using OctoPlan.Core.Models;
+using OctoPlan.Core.Models.Requests;
 using OctoPlan.Core.Persistence;
 
 namespace OctoPlan.Core.Services;
@@ -14,11 +15,16 @@ public class UserService : IUserService
         _databaseContext = databaseContext;
     }
     
-    public async Task<bool> CreateUserAsync(User user)
+    public async Task<bool> CreateUserAsync(CreateUserRequest request, CancellationToken ct)
     {
         try
         {
-            await _databaseContext.Users.AddAsync(user);
+            var user = new User(request);
+            
+            //await _databaseContext.Users.AddAsync(user)
+
+            var user1 = new User(request.FirstName, request.LastName, request.Email);
+            await _databaseContext.SaveChangesAsync(ct);
 
             return true;
         }

@@ -13,7 +13,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddScoped<IDatabaseContext>(provider => provider.GetService<DatabaseContext>());
+builder.Services.AddScoped<IDatabaseContext>(provider => provider.GetService<DatabaseContext>() ?? throw new InvalidOperationException());
 
 builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<IProjectTaskService, ProjectTaskService>();

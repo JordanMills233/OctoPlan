@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OctoPlan.Core.Interfaces;
 using OctoPlan.Core.Models;
+using OctoPlan.Core.Models.Requests;
 
 namespace OctoPlan.Core.Controllers;
 
@@ -32,14 +33,13 @@ public class UserController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateUser(User user)
+    public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request, CancellationToken ct)
     {
-        await _userService.CreateUserAsync(user);
+        if (await _userService.CreateUserAsync(request, ct)) return Ok();
 
-        return Ok();
+        return BadRequest();
     }
-
-
+    
     [HttpPut]
     public async Task<IActionResult> UpdateUser(User user, CancellationToken ct)
     {
