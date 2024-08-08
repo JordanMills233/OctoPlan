@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OctoPlan.Core.Interfaces;
 using OctoPlan.Core.Models;
+using OctoPlan.Core.Models.Requests;
 
 namespace OctoPlan.Core.Controllers;
 
@@ -32,9 +33,9 @@ public class TaskController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateTask(ProjectTask task, CancellationToken ct)
+    public async Task<IActionResult> CreateTask([FromBody] CreateTaskRequest request, CancellationToken ct)
     {
-        await _projectTaskService.CreateTaskAsync(task, ct);
+        await _projectTaskService.CreateTaskAsync(request, ct);
 
         return Ok();
     }

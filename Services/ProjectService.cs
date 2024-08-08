@@ -2,6 +2,7 @@
 using OctoPlan.Core.Enums;
 using OctoPlan.Core.Interfaces;
 using OctoPlan.Core.Models;
+using OctoPlan.Core.Models.Requests;
 using OctoPlan.Core.Persistence;
 
 namespace OctoPlan.Core.Services;
@@ -16,20 +17,14 @@ public class ProjectService : IProjectService
         _dbContext = databaseContext;
     }
     
-    public async Task<bool> CreateProjectAsync(Project project, Guid ownerId, CancellationToken ct)
+    public async Task<bool> CreateProjectAsync(CreateProjectRequest request, CancellationToken ct)
     {
         try
         {
-            var owner = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id.Equals(ownerId), ct);
-            if (owner == null)
-            {
-                throw new Exception($"{ownerId} not found");
-            }
-
-            project.OwnerId = ownerId;
-            project.Status = Status.InProgress;
-
+            var project = new Project(request);
+            
             await _dbContext.Projects.AddAsync(project, ct);
+            await _dbContext.SaveChangesAsync(ct);
 
             return true;
         }

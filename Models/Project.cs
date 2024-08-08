@@ -1,5 +1,5 @@
 ﻿using OctoPlan.Core.Enums;
-using OctoPlan.Core.Interfaces;
+using OctoPlan.Core.Models.Requests;
 
 namespace OctoPlan.Core.Models;
 
@@ -12,5 +12,20 @@ public record Project
     public DateTime EndDate { get; set; }
     public Status Status { get; set; }
     public Guid OwnerId { get; set; }
-    public User Owner { get; set; }
+
+    public Project()
+    {
+        
+    }
+
+    public Project(CreateProjectRequest request)
+    {
+        Id = Guid.NewGuid();
+        Title = request.Title;
+        Description = request.Description;
+        StartDate = request.StartDate;
+        EndDate = request.EndDate;
+        Status = Status.NotStarted;
+        OwnerId = request.UserId;
+    }
 }

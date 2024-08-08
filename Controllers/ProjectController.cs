@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OctoPlan.Core.Interfaces;
 using OctoPlan.Core.Models;
+using OctoPlan.Core.Models.Requests;
 
 namespace OctoPlan.Core.Controllers;
 
@@ -15,7 +16,7 @@ public class ProjectController : ControllerBase
         _projectService = projectService;
     }
 
-    [HttpGet]
+    [HttpGet("{projectId}")]
     public async Task<IActionResult> GetProjectById(Guid projectId)
     {
         var project = await _projectService.GetProjectByIdAsync(projectId);
@@ -32,9 +33,9 @@ public class ProjectController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateProject(Project project, Guid userId, CancellationToken ct)
+    public async Task<IActionResult> CreateProject([FromBody] CreateProjectRequest request, CancellationToken ct)
     {
-        await _projectService.CreateProjectAsync(project, userId, ct);
+        await _projectService.CreateProjectAsync(request, ct);
 
         return Ok();
     }

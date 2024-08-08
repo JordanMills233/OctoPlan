@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using OctoPlan.Core.Enums;
 using OctoPlan.Core.Interfaces;
 using OctoPlan.Core.Models;
+using OctoPlan.Core.Models.Requests;
 using OctoPlan.Core.Persistence;
 
 namespace OctoPlan.Core.Services; 
@@ -15,13 +16,14 @@ public class ProjectTaskService : IProjectTaskService
         _dbContext = dbContext;
     }
     
-    public async Task<bool> CreateTaskAsync(ProjectTask projectTask, CancellationToken ct)
+    public async Task<bool> CreateTaskAsync(CreateTaskRequest request, CancellationToken ct)
     {
         try
         {
-            projectTask.TaskStatus = Status.NotStarted;
+            var task = new ProjectTask(request);
 
-            await _dbContext.ProjectTasks.AddAsync(projectTask, ct);
+            await _dbContext.ProjectTasks.AddAsync(task, ct);
+            await _dbContext.SaveChangesAsync(ct);
             
             return true;
         }

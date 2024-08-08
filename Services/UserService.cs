@@ -20,10 +20,8 @@ public class UserService : IUserService
         try
         {
             var user = new User(request);
-            
-            //await _databaseContext.Users.AddAsync(user)
 
-            var user1 = new User(request.FirstName, request.LastName, request.Email);
+            await _databaseContext.Users.AddAsync(user);
             await _databaseContext.SaveChangesAsync(ct);
 
             return true;

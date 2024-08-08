@@ -1,11 +1,11 @@
 ﻿using OctoPlan.Core.Models;
-using Task = System.Threading.Tasks.Task;
+using OctoPlan.Core.Models.Requests;
 
 namespace OctoPlan.Core.Interfaces;
 
 public interface IProjectService
 {
-    Task<bool> CreateProjectAsync(Project project, Guid ownerId, CancellationToken ct);
+    Task<bool> CreateProjectAsync(CreateProjectRequest request, CancellationToken ct);
     Task<Project> GetProjectByIdAsync(Guid projectId);
     Task<IEnumerable<Project>> GetProjectsByUserAsync(Guid userId, CancellationToken ct);
     Task<bool> UpdateProjectAsync(Project project, CancellationToken ct);
