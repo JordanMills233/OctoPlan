@@ -45,9 +45,33 @@ public class ProjectService : IProjectService
         return project;
     }
 
-    public async Task<IEnumerable<Project>> GetProjectsByUserAsync(Guid userId, CancellationToken ct)
+    public async Task<IEnumerable<Project>> GetProjectsByEmailAsync(string email, CancellationToken ct)
     {
-        var projects = await _dbContext.Projects.Where(p => p.OwnerId.Equals(userId)).ToListAsync(ct);
+        // var projects =
+        //     (from Project in _dbContext.Projects
+        //         join User in _dbContext.Users on Project.OwnerId equals User.Id
+        //         where User.Email == email
+        //         select Project).AsEnumerable();
+
+        // var projects = await _dbContext.Projects
+        //     .Join(_dbContext.Users, 
+        //         project => project.OwnerId, 
+        //         user => user.Id,
+        //         (project, user) => new { Project = project, User = user })
+        //     .Where(joined => joined.User.Email == email)
+        //     .Select(joined => joined.Project)
+        //     .ToListAsync(ct);
+        
+        var projects = await _dbContext.Projects
+            .Join(_dbContext.Users, 
+                project => project.OwnerId, 
+                user => user.Id,
+                (project, user) => new { Project = project, User = user })
+            .Where(joined => joined.User.Email == email)
+            .Select(joined => joined.Project)
+            .AsNoTracking()
+            .ToListAsync(ct);
+        
         if (projects == null)
         {
             throw new Exception("No projects associated with user");

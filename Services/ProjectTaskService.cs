@@ -47,7 +47,7 @@ public class ProjectTaskService : IProjectTaskService
 
     public async Task<IEnumerable<ProjectTask>> GetTasksByIdAsync(Guid projectId, CancellationToken ct)
     {
-        var tasks = await _dbContext.ProjectTasks.Where(p => p.Id.Equals(projectId)).ToListAsync(ct);
+        var tasks = await _dbContext.ProjectTasks.Where(p => p.ProjectId.Equals(projectId)).ToListAsync(ct);
 
         return tasks;
     }

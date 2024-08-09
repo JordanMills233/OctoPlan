@@ -6,7 +6,7 @@ using OctoPlan.Core.Models.Requests;
 namespace OctoPlan.Core.Controllers;
 
 [ApiController]
-[Route("/api/[controller]")]
+[Route("/[controller]/[action]")]
 public class ProjectController : ControllerBase
 {
     private readonly IProjectService _projectService;
@@ -24,10 +24,10 @@ public class ProjectController : ControllerBase
         return Ok(project);
     }
 
-    [HttpGet("ProjectByEmail")]
-    public async Task<IActionResult> GetProjectByEmail(Guid userId, CancellationToken ct)
+    [HttpGet()]
+    public async Task<IActionResult> GetProjectByEmail(string email, CancellationToken ct)
     {
-        var project = await _projectService.GetProjectsByUserAsync(userId, ct);
+        var project = await _projectService.GetProjectsByEmailAsync(email, ct);
 
         return Ok(project);
     }

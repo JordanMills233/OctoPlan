@@ -6,7 +6,7 @@ using OctoPlan.Core.Models.Requests;
 namespace OctoPlan.Core.Controllers;
 
 [ApiController]
-[Route("/api/[controller]")]
+[Route("/[controller]/[action]")]
 public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
@@ -24,7 +24,7 @@ public class UserController : ControllerBase
         return Ok(user);
     }
 
-    [HttpGet("GetByEmail")]
+    [HttpGet()]
     public async Task<IActionResult> GetUserByEmail(string email)
     {
         var user = await _userService.GetUserByEmailAsync(email);

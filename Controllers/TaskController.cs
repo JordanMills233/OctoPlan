@@ -6,7 +6,7 @@ using OctoPlan.Core.Models.Requests;
 namespace OctoPlan.Core.Controllers;
 
 [ApiController]
-[Route("/api/[controller]")]
+[Route("/[controller]/[action]")]
 public class TaskController : ControllerBase
 {
     private readonly IProjectTaskService _projectTaskService;
@@ -24,7 +24,7 @@ public class TaskController : ControllerBase
         return Ok(task);
     }
 
-    [HttpGet("AllTasks")]
+    [HttpGet]
     public async Task<IActionResult> GetAll(Guid projectId, CancellationToken ct)
     {
         var tasks = await _projectTaskService.GetTasksByIdAsync(projectId, ct);
@@ -49,7 +49,7 @@ public class TaskController : ControllerBase
     }
 
     [HttpPut]
-    async Task<IActionResult> AssignTask(Guid taskId, Guid userId, CancellationToken ct)
+    public async Task<IActionResult> AssignTask(Guid taskId, Guid userId, CancellationToken ct)
     {
         await _projectTaskService.AssignTaskAsync(taskId, userId, ct);
 
