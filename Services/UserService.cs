@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
 using OctoPlan.Core.Interfaces;
 using OctoPlan.Core.Models;
@@ -19,6 +21,7 @@ public class UserService : IUserService
     {
         try
         {
+            request = request with { Password = HashPassword(request.Password) };
             var user = new User(request);
 
             await _databaseContext.Users.AddAsync(user);
@@ -30,6 +33,8 @@ public class UserService : IUserService
         {
             return false;
         }
+        
+        
     }
 
     public async Task<User> GetUserByIdAsync(Guid userId)
@@ -119,4 +124,19 @@ public class UserService : IUserService
             throw;
         }
     }
+    
+    private string HashPassword(string password)
+    {
+        const int keySize = 32;
+        const int iterations = 350000;
+        var hashAlgo = HashAlgorithmName.SHA3_512;
+
+        var salt = RandomNumberGenerator.GetBytes(keySize);
+
+        var hash = Rfc2898DeriveBytes.Pbkdf2(Encoding.UTF8.GetBytes(password), salt, iterations, hashAlgo, keySize);
+
+        return Convert.ToHexString(hash);
+    }
+    
+   
 }

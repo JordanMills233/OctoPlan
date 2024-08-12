@@ -1,6 +1,7 @@
-﻿using OctoPlan.Core.Interfaces;
+﻿using System.Security.Cryptography;
+using System.Text;
 using OctoPlan.Core.Models.Requests;
-using FluentValidation;
+
 
 namespace OctoPlan.Core.Models;
 
@@ -11,6 +12,7 @@ public record User
     public string LastName { get; set; }
     public string Email { get; set; }
     public bool Registered { get; set; }
+    public string PasswordHash { get; set; }
 
     public User()
     {
@@ -22,6 +24,7 @@ public record User
         FirstName = request.FirstName;
         LastName = request.LastName;
         Email = request.Email;
+        PasswordHash = request.Password;
         Registered = false;
     }
 
@@ -33,13 +36,6 @@ public record User
         Email = email;
         Registered = false;
     }
-
-    public class UserValidator : AbstractValidator<User>
-    {
-        public UserValidator()
-        {
-            RuleFor(User => User.FirstName).MaximumLength(50);
-        }
-    }
+    
 }
 
