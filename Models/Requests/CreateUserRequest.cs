@@ -1,3 +1,8 @@
 ﻿namespace OctoPlan.Core.Models.Requests;
 
-public record CreateUserRequest(string FirstName, string LastName, string Email, string Password);
+public record CreateUserRequest{
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public string Email { get; set; }
+    public string Password { get; set; }
+};

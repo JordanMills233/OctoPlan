@@ -13,29 +13,21 @@ public record User
     public string Email { get; set; }
     public bool Registered { get; set; }
     public string PasswordHash { get; set; }
+    public string Salt { get; set; }
 
     public User()
     {
         
     }
-    public User(CreateUserRequest request)
+    public User(CreateUserRequest request, string salt)
     {
         Id = Guid.NewGuid();
         FirstName = request.FirstName;
         LastName = request.LastName;
         Email = request.Email;
         PasswordHash = request.Password;
+        Salt = salt;
         Registered = false;
     }
-
-    public User(string firstName, string lastName, string email)
-    {
-        Id = Guid.NewGuid();
-        FirstName = firstName;
-        LastName = lastName;
-        Email = email;
-        Registered = false;
-    }
-    
 }
 

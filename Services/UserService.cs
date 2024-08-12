@@ -21,20 +21,19 @@ public class UserService : IUserService
     {
         try
         {
-            request = request with { Password = HashPassword(request.Password) };
-            var user = new User(request);
+            request.Password = HashPassword(request.Password, out var salt);
+            var user = new User(request, Convert.ToHexString(salt));
 
-            await _databaseContext.Users.AddAsync(user);
+            await _databaseContext.Users.AddAsync(user, ct);
             await _databaseContext.SaveChangesAsync(ct);
 
             return true;
         }
         catch (Exception e)
         {
+            Console.WriteLine(e.Message);
             return false;
         }
-        
-        
     }
 
     public async Task<User> GetUserByIdAsync(Guid userId)
@@ -124,19 +123,70 @@ public class UserService : IUserService
             throw;
         }
     }
-    
-    private string HashPassword(string password)
+
+    public async Task<bool> LoginUserAsync(LoginRequest request, CancellationToken ct)
     {
-        const int keySize = 32;
-        const int iterations = 350000;
-        var hashAlgo = HashAlgorithmName.SHA3_512;
+        var user =
+            await _databaseContext.Users.FirstOrDefaultAsync(u => u.Email.ToLower().Equals(request.Email.ToLower()), ct);
 
-        var salt = RandomNumberGenerator.GetBytes(keySize);
+        if (user == null)
+        {
+            throw new Exception("User does not exist");
+        }
+        return VerifyPassword(request.Password, user.PasswordHash);
+    }
 
-        var hash = Rfc2898DeriveBytes.Pbkdf2(Encoding.UTF8.GetBytes(password), salt, iterations, hashAlgo, keySize);
+    private string HashPassword(string password, out byte[] salt)
+    {
+        // const int keySize = 32;
+        // const int iterations = 350000;
+        // var hashAlgo = HashAlgorithmName.SHA3_512;
+        //
+        // salt = RandomNumberGenerator.GetBytes(keySize);
+        //
+        // var hash = Rfc2898DeriveBytes.Pbkdf2(Encoding.UTF8.GetBytes(password), salt, iterations, hashAlgo, keySize);
+        //
+        // return Convert.ToHexString(hash);
+        
+        // Generate a salt
+        salt = RandomNumberGenerator.GetBytes(16);
 
-        return Convert.ToHexString(hash);
+        // Hash the password using PBKDF2
+        var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 100000, HashAlgorithmName.SHA256);
+        byte[] hash = pbkdf2.GetBytes(32);
+
+        // Combine the salt and hash
+        byte[] hashBytes = new byte[48];
+        Array.Copy(salt, 0, hashBytes, 0, 16);
+        Array.Copy(hash, 0, hashBytes, 16, 32);
+
+        // Convert to base64
+        return Convert.ToBase64String(hashBytes);
     }
     
-   
+    private static bool VerifyPassword(string password, string storedHash)
+    {
+        // Extract the bytes from the stored hash (which includes the salt)
+        byte[] hashBytes = Convert.FromBase64String(storedHash);
+
+        // Extract the salt (first 16 bytes)
+        byte[] salt = new byte[16];
+        Array.Copy(hashBytes, 0, salt, 0, 16);
+
+        // Hash the input password using the same salt and parameters
+        var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 100000, HashAlgorithmName.SHA256);
+        byte[] hash = pbkdf2.GetBytes(32);
+
+        // Compare the computed hash with the stored hash (the last 32 bytes)
+        for (int i = 0; i < 32; i++)
+        {
+            if (hashBytes[i + 16] != hash[i])
+            {
+                Console.WriteLine("password is wrong dog");
+                return false;
+            }
+        }
+        Console.WriteLine("password is right dog");
+        return true;
+    }
 }

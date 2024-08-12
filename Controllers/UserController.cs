@@ -39,6 +39,14 @@ public class UserController : ControllerBase
 
         return BadRequest();
     }
+
+    [HttpPost]
+    public async Task<IActionResult> LoginUser([FromBody] LoginRequest request, CancellationToken ct)
+    {
+        if (await _userService.LoginUserAsync(request, ct)) return Ok();
+
+        return BadRequest();
+    }
     
     [HttpPut]
     public async Task<IActionResult> UpdateUser(User user, CancellationToken ct)

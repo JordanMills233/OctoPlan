@@ -10,4 +10,5 @@ public interface IUserService
     Task<User> GetUserByEmailAsync(string email);
     Task UpdateUserAsync(User user, CancellationToken ct);
     Task DeleteUserAsync(Guid userId, CancellationToken ct);
+    Task<bool> LoginUserAsync(LoginRequest request, CancellationToken ct);
 }
