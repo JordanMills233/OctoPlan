@@ -1,10 +1,13 @@
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using OctoPlan.Core.Interfaces;
 using OctoPlan.Core.Models;
 using OctoPlan.Core.Models.Requests;
+using OctoPlan.Core.Models.Responses;
 using OctoPlan.Core.Persistence;
+
 
 namespace OctoPlan.Core.Services;
 
@@ -124,7 +127,7 @@ public class UserService : IUserService
         }
     }
 
-    public async Task<bool> LoginUserAsync(LoginRequest request, CancellationToken ct)
+    public async Task<LoginResponse> LoginUserAsync(LoginRequest request, CancellationToken ct)
     {
         var user =
             await _databaseContext.Users.FirstOrDefaultAsync(u => u.Email.ToLower().Equals(request.Email.ToLower()), ct);
@@ -133,21 +136,21 @@ public class UserService : IUserService
         {
             throw new Exception("User does not exist");
         }
-        return VerifyPassword(request.Password, user.PasswordHash);
+
+        if (VerifyPassword(request.Password, user.PasswordHash))
+        {
+            return new LoginResponse(true, "Login Succesfull", GenerateJWTToken(user));
+        };
+    }
+
+    private string GenerateJWTToken(User user)
+    {
+        var securitykey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
+        var credentials = new SigningCredentials(securitykey, SecurityAlgorithms.HmacSha256);
     }
 
     private string HashPassword(string password, out byte[] salt)
     {
-        // const int keySize = 32;
-        // const int iterations = 350000;
-        // var hashAlgo = HashAlgorithmName.SHA3_512;
-        //
-        // salt = RandomNumberGenerator.GetBytes(keySize);
-        //
-        // var hash = Rfc2898DeriveBytes.Pbkdf2(Encoding.UTF8.GetBytes(password), salt, iterations, hashAlgo, keySize);
-        //
-        // return Convert.ToHexString(hash);
-        
         // Generate a salt
         salt = RandomNumberGenerator.GetBytes(16);
 
