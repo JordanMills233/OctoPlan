@@ -1,3 +1,5 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
@@ -14,10 +16,12 @@ namespace OctoPlan.Core.Services;
 public class UserService : IUserService
 {
     private readonly IDatabaseContext _databaseContext;
+    private readonly IConfiguration _configuration;
 
-    public UserService(IDatabaseContext databaseContext)
+    public UserService(IDatabaseContext databaseContext, IConfiguration configuration)
     {
         _databaseContext = databaseContext;
+        _configuration = configuration;
     }
     
     public async Task<bool> CreateUserAsync(CreateUserRequest request, CancellationToken ct)
@@ -141,12 +145,25 @@ public class UserService : IUserService
         {
             return new LoginResponse(true, "Login Succesfull", GenerateJWTToken(user));
         };
+
+        return new LoginResponse(false, "Login Failed");
     }
 
     private string GenerateJWTToken(User user)
     {
-        var securitykey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
+        var securitykey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? string.Empty));
         var credentials = new SigningCredentials(securitykey, SecurityAlgorithms.HmacSha256);
+        var userClaims = new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Name, user.FirstName + " " + user.LastName),
+            new Claim(ClaimTypes.Email, user.Email),
+        };
+
+        var token = new JwtSecurityToken(issuer: _configuration["Jwt:Issuer"], audience: _configuration["Jwt:Audience"],
+            claims: userClaims, expires: DateTime.Now.AddHours(1), signingCredentials: credentials);
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
     private string HashPassword(string password, out byte[] salt)

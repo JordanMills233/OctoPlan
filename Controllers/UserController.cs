@@ -43,9 +43,11 @@ public class UserController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> LoginUser([FromBody] LoginRequest request, CancellationToken ct)
     {
-        if (await _userService.LoginUserAsync(request, ct)) return Ok();
+        var response = await _userService.LoginUserAsync(request, ct);
+        
+        if (response.Flag) return Ok(response);
 
-        return BadRequest();
+        return BadRequest(response.Message);
     }
     
     [HttpPut]

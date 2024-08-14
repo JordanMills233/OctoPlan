@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using OctoPlan.Core.Interfaces;
 using OctoPlan.Core.Models;
 using OctoPlan.Core.Models.Requests;
@@ -24,6 +25,7 @@ public class ProjectController : ControllerBase
         return Ok(project);
     }
 
+    [Authorize]
     [HttpGet()]
     public async Task<IActionResult> GetProjectByEmail(string email, CancellationToken ct)
     {
