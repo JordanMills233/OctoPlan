@@ -19,27 +19,31 @@ public class UserService : IUserService
     private readonly IConfiguration _configuration;
 
     public UserService(IDatabaseContext databaseContext, IConfiguration configuration)
-    {
+    {   
         _databaseContext = databaseContext;
         _configuration = configuration;
     }
     
-    public async Task<bool> CreateUserAsync(CreateUserRequest request, CancellationToken ct)
+    public async Task<CreateUserResponse> CreateUserAsync(CreateUserRequest request, CancellationToken ct)
     {
         try
         {
+            var exists = _databaseContext.Users.FirstOrDefault(u => u.Email == request.Email);
+
+            if (exists != null) return new CreateUserResponse(false, "A user with that email already exists");
+            
             request.Password = HashPassword(request.Password, out var salt);
             var user = new User(request, Convert.ToHexString(salt));
 
             await _databaseContext.Users.AddAsync(user, ct);
             await _databaseContext.SaveChangesAsync(ct);
 
-            return true;
+            return new CreateUserResponse(true, $"User with email {request.Email} has been created");
         }
         catch (Exception e)
         {
             Console.WriteLine(e.Message);
-            return false;
+            return new CreateUserResponse(false, e.Message);
         }
     }
 
@@ -62,7 +66,6 @@ public class UserService : IUserService
             throw;
         }
     }
-
     public async Task<User> GetUserByEmailAsync(string email)
     {
         try

@@ -35,9 +35,10 @@ public class UserController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request, CancellationToken ct)
     {
-        if (await _userService.CreateUserAsync(request, ct)) return Ok();
+        var result = await _userService.CreateUserAsync(request, ct);
+        if (result.Success) return Ok(result);
 
-        return BadRequest();
+        return BadRequest(result);
     }
 
     [HttpPost]
@@ -47,7 +48,7 @@ public class UserController : ControllerBase
         
         if (response.Flag) return Ok(response);
 
-        return BadRequest(response.Message);
+        return BadRequest(response);
     }
     
     [HttpPut]
