@@ -146,13 +146,13 @@ public class UserService : IUserService
 
         if (VerifyPassword(request.Password, user.PasswordHash))
         {
-            return new LoginResponse(true, "Login Succesfull", GenerateJWTToken(user));
+            return new LoginResponse(true, "Login Succesfull", GenerateJwtToken(user, ct));
         };
 
         return new LoginResponse(false, "Login Failed");
     }
 
-    private string GenerateJWTToken(User user)
+    private string GenerateJwtToken(User user, CancellationToken ct)
     {
         var securitykey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? string.Empty));
         var credentials = new SigningCredentials(securitykey, SecurityAlgorithms.HmacSha256);
