@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Amazon.CognitoIdentityProvider.Model;
+using Microsoft.AspNetCore.Mvc;
 using OctoPlan.Core.Interfaces;
 using OctoPlan.Core.Models;
 using OctoPlan.Core.Models.Requests;
+using OctoPlan.Core.Services;
 
 namespace OctoPlan.Core.Controllers;
 
@@ -10,10 +12,12 @@ namespace OctoPlan.Core.Controllers;
 public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
+    private readonly CognitoAuthService _cognitoAuthService;
 
-    public UserController(IUserService userService)
+    public UserController(IUserService userService, CognitoAuthService cognitoAuthService)
     {
         _userService = userService;
+        _cognitoAuthService = cognitoAuthService;
     }
 
     [HttpGet]
@@ -35,20 +39,88 @@ public class UserController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request, CancellationToken ct)
     {
-        var result = await _userService.CreateUserAsync(request, ct);
-        if (result.Success) return Ok(result);
 
-        return BadRequest(result);
+        try
+        {
+            var signUpResult = await _cognitoAuthService.SignUpAsync(
+                email: request.Email,
+                password: request.Password,
+                firstName: request.FirstName,
+                lastName: request.LastName
+            );
+
+            var newRequest = new CreateCognitoUser
+            {
+                Email = request.Email,
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                Password = request.Password,
+                Sub = signUpResult.UserSub
+            };
+
+            var response = _userService.CreateUserAsync(newRequest, ct);
+
+            return Ok(new {success = true, message = "User registered successfully. please check your email for verification.", email = request.Email });
+        }
+        catch (Exception e)
+        {
+            return BadRequest(new {message = e.Message});
+        }
+        
+        // var result = await _userService.CreateUserAsync(request, ct);
+        // if (result.Success) return Ok(result);
+        //
+        // return BadRequest(result);
     }
+
+    [HttpPost()]
+    public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailRequest request)
+    {
+        try
+        {
+            await _cognitoAuthService.ConfirmSignUpAsync(request.email, request.verificationCode);
+            return Ok(new { success = true, message = "Email verified successfully" });
+        }
+        catch (Exception e)
+        {
+            return BadRequest(new { message = "Failed to verify email", e.Message });
+        }
+    } 
 
     [HttpPost]
     public async Task<IActionResult> LoginUser([FromBody] LoginRequest request, CancellationToken ct)
     {
-        var response = await _userService.LoginUserAsync(request, ct);
-        
-        if (response.Flag) return Ok(response);
+        try
+        {
+            AuthenticationResultType authResult =
+                await _cognitoAuthService.SignInAsync(request.Email, request.Password);
 
-        return BadRequest(response);
+            var user = await _userService.GetUserByEmailAsync(request.Email);
+
+            var response = new
+            {
+                User = user,
+                Token = authResult.AccessToken,
+                RefreshToken = authResult.RefreshToken
+            };
+
+            return Ok(response);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "Invalid credentials" });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new {message = ex.Message});
+        }
+        
+        
+        // var response = await _userService.LoginUserAsync(request, ct);
+        
+        // if (response.Flag) return Ok(response);
+
+        // return BadRequest(response);
     }
     
     [HttpPut]

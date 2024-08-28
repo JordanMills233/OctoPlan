@@ -24,7 +24,7 @@ public class UserService : IUserService
         _configuration = configuration;
     }
     
-    public async Task<CreateUserResponse> CreateUserAsync(CreateUserRequest request, CancellationToken ct)
+    public async Task<CreateUserResponse> CreateUserAsync(CreateCognitoUser request, CancellationToken ct)
     {
         try
         {

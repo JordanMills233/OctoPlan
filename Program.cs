@@ -1,4 +1,8 @@
 using System.Text;
+using Amazon;
+using Amazon.CognitoIdentityProvider;
+using Amazon.Extensions.NETCore.Setup;
+using Amazon.Runtime;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -24,23 +28,18 @@ builder.Services.AddCors(options =>
 builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddAWSService<IAmazonCognitoIdentityProvider>(new AWSOptions
+{
+    Credentials = new BasicAWSCredentials(builder.Configuration["AWSCreds:AccessKey"], builder.Configuration["AWSCreds:Secret"]),
+    Region = RegionEndpoint.EUNorth1
+});
+builder.Services.AddTransient <CognitoAuthService>();
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateIssuerSigningKey = true,
-        ValidateLifetime = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? string.Empty))
-    };      
-});
+}).AddJwtBearer();
 
 builder.Services.AddScoped<IDatabaseContext>(provider => provider.GetService<DatabaseContext>() ?? throw new InvalidOperationException());
 

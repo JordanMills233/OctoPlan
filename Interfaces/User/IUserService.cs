@@ -6,7 +6,7 @@ namespace OctoPlan.Core.Interfaces;
 
 public interface IUserService
 {
-    Task<CreateUserResponse> CreateUserAsync(CreateUserRequest request, CancellationToken ct);
+    Task<CreateUserResponse> CreateUserAsync(CreateCognitoUser request, CancellationToken ct);
     Task<User> GetUserByIdAsync(Guid userId);
     Task<User> GetUserByEmailAsync(string email);
     Task UpdateUserAsync(User user, CancellationToken ct);

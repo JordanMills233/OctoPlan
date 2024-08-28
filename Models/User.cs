@@ -11,6 +11,7 @@ public record User
     public string FirstName { get; set; } 
     public string LastName { get; set; }
     public string Email { get; set; }
+    public string Sub { get; set; }
     public bool Registered { get; set; }
     public string PasswordHash { get; set; }
     public string Salt { get; set; }
@@ -19,7 +20,7 @@ public record User
     {
         
     }
-    public User(CreateUserRequest request, string salt)
+    public User(CreateCognitoUser request, string salt)
     {
         Id = Guid.NewGuid();
         FirstName = request.FirstName;
@@ -28,6 +29,7 @@ public record User
         PasswordHash = request.Password;
         Salt = salt;
         Registered = false;
+        Sub = request.Sub;
     }
 }
 
