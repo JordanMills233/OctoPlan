@@ -1,4 +1,5 @@
-﻿using Amazon.CognitoIdentityProvider.Model;
+﻿using System.Diagnostics;
+using Amazon.CognitoIdentityProvider.Model;
 using Microsoft.AspNetCore.Mvc;
 using OctoPlan.Core.Interfaces;
 using OctoPlan.Core.Models;
@@ -13,11 +14,13 @@ public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
     private readonly CognitoAuthService _cognitoAuthService;
+    private readonly ILogger<UserController> _logger;
 
-    public UserController(IUserService userService, CognitoAuthService cognitoAuthService)
+    public UserController(IUserService userService, CognitoAuthService cognitoAuthService,ILogger<UserController> logger)
     {
         _userService = userService;
         _cognitoAuthService = cognitoAuthService;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -42,13 +45,17 @@ public class UserController : ControllerBase
 
         try
         {
+            var stopwatch = Stopwatch.StartNew();
             var signUpResult = await _cognitoAuthService.SignUpAsync(
                 email: request.Email,
                 password: request.Password,
                 firstName: request.FirstName,
                 lastName: request.LastName
             );
+            stopwatch.Stop();
+            _logger.LogInformation($"User {request.Email} has been created in Cognito in {stopwatch.Elapsed}.");
 
+            stopwatch.Restart();
             var newRequest = new CreateCognitoUser
             {
                 Email = request.Email,
@@ -57,6 +64,8 @@ public class UserController : ControllerBase
                 Password = request.Password,
                 Sub = signUpResult.UserSub
             };
+            stopwatch.Stop();
+            _logger.LogInformation($"User {request.Email} has been created in local DB in {stopwatch.Elapsed}.");
 
             var response = _userService.CreateUserAsync(newRequest, ct);
 
