@@ -21,11 +21,10 @@ public class CognitoAuthService
     {
         try
         {
-            var request = new AdminInitiateAuthRequest
+            var request = new InitiateAuthRequest()
             {
-                UserPoolId = _configuration["Cognito:UserPoolId"],
                 ClientId = _configuration["Cognito:ClientId"],
-                AuthFlow = AuthFlowType.ADMIN_USER_PASSWORD_AUTH,
+                AuthFlow = AuthFlowType.USER_PASSWORD_AUTH,
                 AuthParameters = new Dictionary<string, string>
                 {
                     {"PASSWORD", password},
@@ -35,7 +34,7 @@ public class CognitoAuthService
             };
             
 
-            var response = await _cognitoProvider.AdminInitiateAuthAsync(request);
+            var response = await _cognitoProvider.InitiateAuthAsync(request);
             return response.AuthenticationResult;
         }
         catch (NotAuthorizedException)
